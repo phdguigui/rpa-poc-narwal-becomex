@@ -43,12 +43,17 @@ namespace RPABecomex
         {
             var element = GetElement(driver, xPath, validateTime);
 
-            if (element != null)
+            if (IsFieldAvailable(element))
             {
-                element.SendKeys(text);
+                element?.SendKeys(text);
                 return true;
             }
             return false;
+        }
+
+        private static bool IsFieldAvailable (IWebElement? element)
+        {
+            return element != null && string.IsNullOrEmpty(element.GetAttribute("value")) && element.GetAttribute("disabled") == null;
         }
     }
 }

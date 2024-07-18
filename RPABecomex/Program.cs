@@ -31,4 +31,43 @@ Click(browser,
 Click(browser,
     "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input[2]");
 
+// Type Observações
+Type(browser, 
+    "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[10]/td/textarea", 
+    "Observação teste");
+
+// Type Data de Vencimento
+Type(browser, 
+    "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[11]/td[2]/input", 
+    "123");
+
+// Type Pagamento Até o Dia
+Type(browser, 
+    "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[12]/td[2]/input", 
+    "123");
+
+// Type Referência
+Type(browser,
+    "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[14]/td[2]/input", 
+    "123");
+
+//!!!!!!! TO DO !!!!!!!
+//Select Recinto Alfandegado
+
+// Type Valor Receita
+Type(browser, 
+    "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[20]/td[2]/input", 
+    "123");
+
+// Type Juros de Mora
+Type(browser, 
+    "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[21]/td[2]/input", 
+    "123");
+
+// Type Juros de Mora
+Type(browser, 
+    "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[22]/td[2]/input", 
+    "123");
+
+
 Console.WriteLine("Hello, World!");
