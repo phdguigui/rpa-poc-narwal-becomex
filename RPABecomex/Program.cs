@@ -10,12 +10,10 @@ bool isGareProcess = true;
 bool isGuiaLiberacaoProcess = false;
 string mensagemRetorno = "";
 
-// Gare Process Call
 if (isGareProcess && !isGuiaLiberacaoProcess)
 {
     GareProcess();
 }
-// Guia de Liberação Process Call
 else if (!isGareProcess && isGuiaLiberacaoProcess)
 {
     GuiaLiberacaoProcess();
@@ -52,12 +50,25 @@ void GareProcess ()
     Click(browser,
         "/html/body/form/div[4]/p[1]/table/tbody/tr[1]/td/table/tbody/tr[2]/td/table/tbody/tr[3]/td[3]/table/tbody/tr[6]/td/input[1]");
 
-    // Click GARE
-    if (!Click(browser,
-        "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input[2]"))
+    if (GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", 10) == null)
     {
-        mensagemRetorno = "Erro ao encontrar dados com o CNPJ e DI informados. " + 
+        mensagemRetorno = "Erro ao encontrar dados com o CNPJ e DI informados. " +
             GetElement(browser, "/html/body/form/div[4]/p[1]/table/tbody/tr[1]/td/table/tbody/tr[2]/td/table/tbody/tr[3]/td[3]/span", 5)?.Text;
+        return;
+    }
+
+    // Click GARE
+    if (!ClickOptionButton(browser,
+        "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", "GARE"))
+    {
+        mensagemRetorno = "Erro ao encontrar botão para geração da GARE.";
+        return;
+    }
+
+    if (GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[10]/td/textarea", 5) == null)
+    {
+        mensagemRetorno = "Falha ao carregar página de informações da GARE.";
+        return;
     }
 
     // Type Observações
@@ -81,7 +92,11 @@ void GareProcess ()
         "123");
 
     //Select Recinto Alfandegado
-    SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[16]/td[2]/select", "8921101");
+    if (!SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[16]/td[2]/select", "8921101"))
+    {
+        mensagemRetorno = "Falha ao encontrar opção de recinto alfandegário.";
+        return;
+    }
 
     // Type Valor Receita
     Type(browser, 
@@ -95,7 +110,7 @@ void GareProcess ()
     sw.Start();
     while (sw.Elapsed.TotalSeconds < 300)
     {
-        genDoc = GetElement(browser, "/html/body/form/table/tbody/tr/td[3]/input[1]", 5) != null;
+        genDoc = GetElement(browser, "/html/body/form/table/tbody/tr/td[3]/input[1]", 2) != null;
         if (genDoc)
         {
             mensagemRetorno = "Sucesso ao gerar GARE.";
@@ -137,12 +152,18 @@ void GuiaLiberacaoProcess()
     Click(browser,
         "/html/body/form/div[4]/p[1]/table/tbody/tr[1]/td/table/tbody/tr[2]/td/table/tbody/tr[3]/td[3]/table/tbody/tr[6]/td/input[1]");
 
-    browser.Navigate().GoToUrl("file:///C:/Users/guilherme.siedschlag/Downloads/Arquivos%20HTML%20+%20robo%20ICMS%20Bysoft/Controle%20de%20Importa%C3%A7%C3%B5es.html");
-
     // Edição das Adições
+    if (GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", 10) == null)
+    {
+        mensagemRetorno = "Erro ao encontrar dados com o CNPJ e DI informados. " +
+            GetElement(browser, "/html/body/form/div[4]/p[1]/table/tbody/tr[1]/td/table/tbody/tr[2]/td/table/tbody/tr[3]/td[3]/span", 5)?.Text;
+        return;
+    }
     var adicaoList = browser.FindElements(By.XPath($"/html/body/form/div[4]/p/table/tbody/tr[5]/td/table/tbody/tr[2]/td[1]/input"));
+
     foreach (var adicao in adicaoList)
     {
+        // Click Editar
         adicao.Click();
         // Type Fundamento Legal da Exoneração
         Type(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table[2]/tbody/tr[4]/td/textarea", "Observação teste");
@@ -155,22 +176,44 @@ void GuiaLiberacaoProcess()
     }
 
     // Click Guia de Liberação
-    ClickOptionButton(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", "Guia de Liberação");
+    if(!ClickOptionButton(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", "Guia de Liberação"))
+    {
+        mensagemRetorno = "Botão de Guia de Liberação não encontrado.";
+        return;
+    }
+
+    if (GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[3]/td[1]/input", 5) == null)
+    {
+        mensagemRetorno = "Falha ao carregar página de informações da Guia de Liberação.";
+        return;
+    }
 
     // Type Valor CIF
     Type(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[3]/td[1]/input", "123");
 
     // Select UF Desembaraço
-    SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[3]/td[2]/select", "SP");
+    if (!SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[3]/td[2]/select", "SP"))
+    {
+        mensagemRetorno = "Falha ao encontrar UF Desembaraço infomada.";
+        return;
+    }
 
     // Type Data Declaração Siscomex
     Type(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[4]/td/table/tbody/tr/td[1]/input", "01/01/2024");
 
     // Select UF Desembarque
-    SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[4]/td/table/tbody/tr/td[2]/select", "SP");
+    if (!SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[4]/td/table/tbody/tr/td[2]/select", "SP"))
+    {
+        mensagemRetorno = "Falha ao encontrar UF Desembarque informada.";
+        return;
+    }
 
     // Select Local Desembaraço
-    SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[5]/td/select", "8921101");
+    if (!SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[5]/td/select", "8921101"))
+    {
+        mensagemRetorno = "Falha ao encontrar Local Desembaraço informado.";
+        return;
+    }
 
     // Type Nome
     Type(browser, "/html/body/form/div[4]/p/table/tbody/tr[4]/td/table/tbody/tr/td/table/tbody/tr[2]/td/input", "Guilherme Lucas");
@@ -191,7 +234,11 @@ void GuiaLiberacaoProcess()
     Type(browser, "/html/body/form/div[4]/p/table/tbody/tr[4]/td/table/tbody/tr/td/table/tbody/tr[6]/td[1]/input", "00000000");
 
     // Select UF
-    SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[4]/td/table/tbody/tr/td/table/tbody/tr[6]/td[1]/select", "SP");
+    if (!SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[4]/td/table/tbody/tr/td/table/tbody/tr[6]/td[1]/select", "SP"))
+    {
+        mensagemRetorno = "Falha ao encontrar UF informada.";
+        return;
+    }
 
     // Type DDD
     Type(browser, "/html/body/form/div[4]/p/table/tbody/tr[4]/td/table/tbody/tr/td/table/tbody/tr[6]/td[2]/input[1]", "11");
@@ -207,7 +254,7 @@ void GuiaLiberacaoProcess()
     sw.Start();
     while (sw.Elapsed.TotalSeconds < 300)
     {
-        genDoc = GetElement(browser, "/html/body/form/table/tbody/tr/td[3]/input[1]", 5) != null;
+        genDoc = GetElement(browser, "/html/body/form/table/tbody/tr/td[3]/input[1]", 2) != null;
         if (genDoc)
         {
             mensagemRetorno = "Sucesso ao gerar Guia de Liberação.";

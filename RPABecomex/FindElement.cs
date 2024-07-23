@@ -29,75 +29,110 @@ namespace RPABecomex
 
         public static bool Click (ChromeDriver driver, string xPath, int validateTime = 30)
         {
-            var element = GetElement(driver, xPath, validateTime);
-            
-            if (element != null)
+            try
             {
-                element.Click();
-                return true;
+                var element = GetElement(driver, xPath, validateTime);
+            
+                if (element != null)
+                {
+                    element.Click();
+                    return true;
+                }
+                return false;
             }
-            return false;
+            catch
+            {
+                return false;
+            }
         }
 
         public static bool Type (ChromeDriver driver, string xPath, string text, int validateTime = 30)
         {
-            var element = GetElement(driver, xPath, validateTime);
-
-            if (IsFieldAvailable(element))
+            try
             {
-                element?.SendKeys(text);
-                return true;
+                var element = GetElement(driver, xPath, validateTime);
+
+                if (IsFieldAvailable(element))
+                {
+                    element?.SendKeys(text);
+                    return true;
+                }
+                return false;
             }
-            return false;
+            catch
+            {
+                return false;
+            }
         }
 
         private static bool IsFieldAvailable (IWebElement? element)
         {
-            return element != null && string.IsNullOrEmpty(element.GetAttribute("value")) && element.GetAttribute("disabled") == null;
+            try
+            {
+                return element != null && string.IsNullOrEmpty(element.GetAttribute("value")) && element.GetAttribute("disabled") == null;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static bool SelectOption(ChromeDriver driver, string xPath, string option, int timeout = 30)
         {
-            if (GetElement(driver, xPath, timeout)?.GetAttribute("disabled") != null)
+            try
             {
-                return false;
-            }
-
-            Click(driver, xPath, timeout);
-
-            var optionsList = driver.FindElements(By.XPath($"{xPath}/option"));
-
-            if (optionsList.Count == 0)
-            {
-                return false;
-            }
-
-            foreach (var opt in optionsList)
-            {
-                if (opt.Text.Contains(option, StringComparison.CurrentCultureIgnoreCase))
+                if (GetElement(driver, xPath, timeout)?.GetAttribute("disabled") != null)
                 {
-                    opt.Click();
-                    return true;
+                    return false;
                 }
-            }
 
-            return false;
+                Click(driver, xPath, timeout);
+
+                var optionsList = driver.FindElements(By.XPath($"{xPath}/option"));
+
+                if (optionsList.Count == 0)
+                {
+                    return false;
+                }
+
+                foreach (var opt in optionsList)
+                {
+                    if (opt.Text.Contains(option, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        opt.Click();
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static bool ClickOptionButton(ChromeDriver driver, string xPath, string option, int timeout = 30)
         {
-            var optionsList = driver.FindElements(By.XPath($"{xPath}"));
-
-            foreach (var button in optionsList)
+            try
             {
-                if (button.GetAttribute("value").Contains(option, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    button.Click();
-                    return true;
-                }
-            }
+                var optionsList = driver.FindElements(By.XPath($"{xPath}"));
 
-            return false;
+                foreach (var button in optionsList)
+                {
+                    if (button.GetAttribute("value").Contains(option, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        button.Click();
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
