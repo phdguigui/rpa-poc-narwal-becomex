@@ -55,5 +55,49 @@ namespace RPABecomex
         {
             return element != null && string.IsNullOrEmpty(element.GetAttribute("value")) && element.GetAttribute("disabled") == null;
         }
+
+        public static bool SelectOption(ChromeDriver driver, string xPath, string option, int timeout = 30)
+        {
+            if (GetElement(driver, xPath, timeout)?.GetAttribute("disabled") != null)
+            {
+                return false;
+            }
+
+            Click(driver, xPath, timeout);
+
+            var optionsList = driver.FindElements(By.XPath($"{xPath}/option"));
+
+            if (optionsList.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var opt in optionsList)
+            {
+                if (opt.Text.Contains(option, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    opt.Click();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool ClickOptionButton(ChromeDriver driver, string xPath, string option, int timeout = 30)
+        {
+            var optionsList = driver.FindElements(By.XPath($"{xPath}"));
+
+            foreach (var button in optionsList)
+            {
+                if (button.GetAttribute("value").Contains(option, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    button.Click();
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

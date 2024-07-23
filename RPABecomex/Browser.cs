@@ -10,24 +10,31 @@ namespace RPABecomex
 
         public ChromeDriver? Open(string url, string xPathValidate, int validateTime = 30)
         {
-            driver.Navigate().GoToUrl(url);
-
-            Stopwatch sw = new();
-            sw.Start();
-
-            while (sw.Elapsed.TotalSeconds < validateTime)
+            try
             {
-                try
+                driver.Navigate().GoToUrl(url);
+
+                Stopwatch sw = new();
+                sw.Start();
+
+                while (sw.Elapsed.TotalSeconds < validateTime)
                 {
-                    driver.FindElement(By.XPath(xPathValidate));
+                    try
+                    {
+                        driver.FindElement(By.XPath(xPathValidate));
+                    }
+                    catch 
+                    {
+                        continue;
+                    }
+                    return driver;
                 }
-                catch 
-                {
-                    continue;
-                }
-                return driver;
+                return null;
             }
-            return null;
+            catch
+            {
+                return null;
+            }
         }
 
         public void Close()
