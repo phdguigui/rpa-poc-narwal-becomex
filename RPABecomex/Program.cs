@@ -1,6 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using OpenQA.Selenium;
 using RPABecomex;
 using System.Diagnostics;
 using static RPABecomex.FindElement;
@@ -13,15 +12,18 @@ string mensagemRetorno = "";
 if (isGareProcess && !isGuiaLiberacaoProcess)
 {
     GareProcess();
+    browserInstance.Close();
 }
 else if (!isGareProcess && isGuiaLiberacaoProcess)
 {
     GuiaLiberacaoProcess();
+    browserInstance.Close();
 }
 else
 {
     mensagemRetorno = "Erro ao iniciar processo RPA.";
 }
+Environment.Exit(0);
 
 void GareProcess ()
 {
@@ -50,11 +52,38 @@ void GareProcess ()
     Click(browser,
         "/html/body/form/div[4]/p[1]/table/tbody/tr[1]/td/table/tbody/tr[2]/td/table/tbody/tr[3]/td[3]/table/tbody/tr[6]/td/input[1]");
 
-    if (GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", 10) == null)
+    // Validate Inputs and Importer Screen
+    bool isImportadorScreen = GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[5]/td[1]/input", 5) != null;
+
+    if (!isImportadorScreen && 
+        GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", 5) == null)
     {
         mensagemRetorno = "Erro ao encontrar dados com o CNPJ e DI informados. " +
             GetElement(browser, "/html/body/form/div[4]/p[1]/table/tbody/tr[1]/td/table/tbody/tr[2]/td/table/tbody/tr[3]/td[3]/span", 5)?.Text;
         return;
+    }
+
+    // Wait for the user to confirm importer informations
+    if (isImportadorScreen)
+    {
+        bool confirmedScreen = false;
+
+        Stopwatch sw1 = new();
+        sw1.Start();
+        while (sw1.Elapsed.TotalSeconds < 300)
+        {
+            confirmedScreen = GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", 2) != null;
+            if (confirmedScreen)
+            {
+                break;
+            }
+        }
+
+        if (!confirmedScreen)
+        {
+            mensagemRetorno = "Falha ao confirmar informações do importador.";
+            return;
+        }
     }
 
     // Click GARE
@@ -152,19 +181,56 @@ void GuiaLiberacaoProcess()
     Click(browser,
         "/html/body/form/div[4]/p[1]/table/tbody/tr[1]/td/table/tbody/tr[2]/td/table/tbody/tr[3]/td[3]/table/tbody/tr[6]/td/input[1]");
 
-    // Edição das Adições
-    if (GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", 10) == null)
+    // Validate Inputs and Importer Screen
+    bool isImportadorScreen = GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[5]/td[1]/input", 5) != null;
+
+    if (!isImportadorScreen &&
+        GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", 10) == null)
     {
         mensagemRetorno = "Erro ao encontrar dados com o CNPJ e DI informados. " +
             GetElement(browser, "/html/body/form/div[4]/p[1]/table/tbody/tr[1]/td/table/tbody/tr[2]/td/table/tbody/tr[3]/td[3]/span", 5)?.Text;
         return;
     }
-    var adicaoList = browser.FindElements(By.XPath($"/html/body/form/div[4]/p/table/tbody/tr[5]/td/table/tbody/tr[2]/td[1]/input"));
+
+    // Wait for the user to confirm importer informations
+    if (isImportadorScreen)
+    {
+        bool confirmedScreen = false;
+
+        Stopwatch sw2 = new();
+        sw2.Start();
+        while (sw2.Elapsed.TotalSeconds < 300)
+        {
+            confirmedScreen = GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[8]/td/input", 2) != null;
+            if (confirmedScreen)
+            {
+                break;
+            }
+        }
+
+        if (!confirmedScreen)
+        {
+            mensagemRetorno = "Falha ao confirmar informações do importador.";
+            return;
+        }
+    }
+
+    var adicaoList = GetElementsList(browser, "/html/body/form/div[4]/p/table/tbody/tr[5]/td/table/tbody/tr[2]/td[1]/input", 15);
 
     foreach (var adicao in adicaoList)
     {
+        Thread.Sleep(1000);
         // Click Editar
         adicao.Click();
+        // Click Não Tributado
+        if (GetElement(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table[2]/tbody/tr[2]/td[1]/span/input", 10)?.GetAttribute("checked") != "checked")
+        {
+            Click(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table[2]/tbody/tr[2]/td[1]/span/input");
+        }
+        // Select Tipo (e.g. Regime Especial)
+        SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table[2]/tbody/tr[2]/td[2]/select[1]", "Regime Especial");
+        // Select Detalhamento da Fundamentação
+        SelectOption(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table[2]/tbody/tr[2]/td[2]/select[2]", "Suspensão do ICMS");
         // Type Fundamento Legal da Exoneração
         Type(browser, "/html/body/form/div[4]/p/table/tbody/tr[3]/td/table[2]/tbody/tr[4]/td/textarea", "Observação teste");
         // Click Calcular
@@ -245,7 +311,6 @@ void GuiaLiberacaoProcess()
 
     // Type Telefone
     Type(browser, "/html/body/form/div[4]/p/table/tbody/tr[4]/td/table/tbody/tr/td/table/tbody/tr[6]/td[2]/input[2]", "11111111");
-
 
     // Espera da geração da Guia de Liberação
     bool genDoc = false;

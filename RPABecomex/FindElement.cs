@@ -83,7 +83,7 @@ namespace RPABecomex
             {
                 if (GetElement(driver, xPath, timeout)?.GetAttribute("disabled") != null)
                 {
-                    return false;
+                    return true;
                 }
 
                 Click(driver, xPath, timeout);
@@ -133,6 +133,27 @@ namespace RPABecomex
             {
                 return false;
             }
+        }
+
+        public static dynamic GetElementsList (ChromeDriver driver, string xPath, int timeout)
+        {
+            Stopwatch sw = new();
+            sw.Start();
+
+            while (sw.Elapsed.TotalSeconds < timeout)
+            {
+                try
+                {
+                    var elements = driver.FindElements(By.XPath(xPath)).Count;
+                    return elements;
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            return new List<IWebElement>();
         }
     }
 }
